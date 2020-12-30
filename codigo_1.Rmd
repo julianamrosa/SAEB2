@@ -1,0 +1,517 @@
+---
+title: "A influência de fatores sociais na proficiência em matemática dos alunos do 9º ano do ensino fundamental na Prova Brasil 2017"
+author: "André Fonseca Ferreira - 180097792, Eduardo de Sousa Carvalho - 180048082, Juliana Magalhães Rosa - 180020935"
+date: "11/12/2020"
+output:
+  html_document:
+    theme: yeti
+    highlight: tango
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+      number_sections: yes
+      css: css/style.css
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  word_document:
+    toc: yes
+    toc_depth: '3'
+#always_allow_html: true
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+
+---
+
+
+
+```{r setup, echo = FALSE, warning = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Diretorio de trabalho
+
+
+setwd("C:/Users/eddus/Documents/UnB/Metodos_Estatisticos_2/SAEB/Trabalho")
+
+#Imports
+
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(e1071)
+
+
+# Analises:
+  
+# NOTA_MT > LOCALIZAÃÃO
+# NOTA_MT > SEXO
+# NOTA_MT > TRABALHO
+# NOTA_MT > ESCOLARIDADE DA MÃE
+# NOTA_MT > PERSPECTIVAS
+# PERSPECTIVAS > ESCOLARIDADE DA MÃE
+
+# Dados
+
+dados <- read.csv("amostra.csv", encoding = "UTF-8")
+
+dados$MUNICIPIO <- as.factor(dados$MUNICIPIO)
+
+gera_amostras <- function(dados,tamanho,quantidade){
+  indexes <- list(0)
+  for(i in 1:quantidade){
+    indexes[[i]] <- sample(1:dim(dados)[1], size = tamanho, 
+                           replace = FALSE, prob = NULL)
+  }
+  return(indexes)
+}
+
+amostra_500 <- gera_amostras(dados, 500, 1)
+
+
+options(scipen = 999)
+
+```
+
+# **1 Introdução**
+
+
+
+# **2 Metodologia**
+
+
+
+# **3 Resultados**
+
+
+<div align="left">
+<div style="text-align: right;font-size: 11px;">
+
+```{r ex-11, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+
+na.omit(dados[,c("NOTA_MT","LOCALIZACAO")]) %>% 
+  select(NOTA_MT, LOCALIZACAO) %>%
+  group_by(LOCALIZACAO) %>%
+  summarise(CV_NOTA_MT = round(sd(NOTA_MT)/mean(NOTA_MT, na.rm = TRUE),2),
+            COUNT_NOTA_MT = n(),
+            MIN_NOTA_MT = round(min(NOTA_MT, na.rm = TRUE),2),
+            Q1_NOTA_MT = round(quantile(NOTA_MT, probs = 0.25, na.rm = TRUE),2),
+            MEDIAN_NOTA_MT = round(median(NOTA_MT, na.rm = TRUE),2),
+            MEAN_NOTA_MT = round(mean(NOTA_MT, na.rm = TRUE),2),
+            Q3_NOTA_MT = round(quantile(NOTA_MT, probs = 0.75, na.rm = TRUE),2),
+            MAX_NOTA_MT = round(max(NOTA_MT, na.rm = TRUE),2)) %>% 
+  datatable(colnames = c("Localização", "Coef. Variação","Quantidade","Mínimo","1º Quartil","Mediana","Média","3º Quartil","Máximo"),
+            rownames = FALSE,
+            options = list(paging=FALSE,
+                           ordering=FALSE,
+                           info=FALSE,
+                           searching=FALSE,
+                           columnDefs = list(list(className = 'dt-center',
+                                                  targets = "_all"))),
+                        width = 850,
+            caption = "Tab.1: Medidas descritivas das notas em matemática por localização da escola do aluno")
+
+
+```
+
+
+
+
+```{r ex-12, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+ggplot(data = na.omit(dados[,c("NOTA_MT","LOCALIZACAO")]), aes(y = NOTA_MT))+
+  geom_boxplot(color = 'black', fill = 'lightblue', alpha = 0.5, width = 10,
+               outlier.color = 'red', outlier.fill = 'red')+
+  facet_grid(~LOCALIZACAO)+
+  ylab("Nota em matemática") +
+  labs(title = "Distribuição das notas da Prova Brasil 2017 em matemática segundo a localização
+       da escola do aluno", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0),
+        axis.text.x = element_blank())+
+  labs(caption = "Fig.1: Boxplot da distribuição das notas em matemática segundo a localização da escola 
+       do aluno")+
+  theme(plot.caption = element_text(size = 11))
+
+
+```
+
+
+
+
+```{r ex-13, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+dados$COMPUTADOR <- factor(dados$COMPUTADOR, levels=c("Não tem", "Sim, um", "Sim, dois", "Sim, três", "Sim, quatro ou mais"), ordered=TRUE)
+
+na.omit(dados[,c("NOTA_MT","COMPUTADOR")]) %>% 
+  select(NOTA_MT, COMPUTADOR) %>%
+  group_by(COMPUTADOR) %>%
+  summarise(CV_NOTA_MT = round(sd(NOTA_MT)/mean(NOTA_MT, na.rm = TRUE),2),
+            COUNT_NOTA_MT = n(),
+            MIN_NOTA_MT = round(min(NOTA_MT, na.rm = TRUE),2),
+            Q1_NOTA_MT = round(quantile(NOTA_MT, probs = 0.25, na.rm = TRUE),2),
+            MEDIAN_NOTA_MT = round(median(NOTA_MT, na.rm = TRUE),2),
+            MEAN_NOTA_MT = round(mean(NOTA_MT, na.rm = TRUE),2),
+            Q3_NOTA_MT = round(quantile(NOTA_MT, probs = 0.75, na.rm = TRUE),2),
+            MAX_NOTA_MT = round(max(NOTA_MT, na.rm = TRUE),2)) %>% 
+  datatable(colnames = c("Computador", "Coef. Variação","Quantidade","Mínimo","1º Quartil","Mediana","Média","3º Quartil","Máximo"),
+            rownames = FALSE,
+            options = list(paging=FALSE,
+                           ordering=FALSE,
+                           info=FALSE,
+                           searching=FALSE,
+                           columnDefs = list(list(className = 'dt-center',
+                                                  targets = "_all"))),
+            width = 850,
+            caption = "Tab.2: Medidas descritivas das notas em matemática segundo acesso dos alunos a computador em casa")
+
+
+
+
+```
+
+
+
+
+```{r ex-14, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+
+
+
+ggplot(data = na.omit(dados[,c("NOTA_MT","COMPUTADOR")]), aes(y = NOTA_MT))+
+  geom_boxplot(color = 'black', fill = 'lightblue', alpha = 0.5, width = 10,
+               outlier.color = 'red', outlier.fill = 'red')+
+  facet_grid(~COMPUTADOR)+
+  ylab("Nota em matemática") +
+  labs(title = "Distribuição das notas da Prova Brasil 2017 em matemática segundo
+       acesso dos alunos a computador em casa", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0),
+        axis.text.x = element_blank())+
+  labs(caption = "Fig.2: Boxplot da distribuição das notas em matemática segundo acesso dos alunos a
+       computador em casa")+
+  theme(plot.caption = element_text(size = 11))
+
+
+```
+
+
+
+
+
+```{r ex-15, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+
+dados$ESC_MAE <- factor(dados$ESC_MAE, levels=c("Nunca estudou", "Não completou a 4.ª série/5.º ano do Ensino Fundamental", "Completou a 4.ª série/5.º ano, mas não completou a 8.ª série/9.º ano do Ensino Fundamental", "Completou a 8.ª série/9.º ano do Ensino Fundamental, mas não completou o Ensino Médio", "Completou o Ensino Médio, mas não completou a Faculdade", "Completou a Faculdade", "Não sei"), ordered=TRUE)
+
+na.omit(dados[,c("NOTA_MT","ESC_MAE")]) %>% 
+  select(NOTA_MT, ESC_MAE) %>%
+  group_by(ESC_MAE) %>%
+  summarise(CV_NOTA_MT = round(sd(NOTA_MT)/mean(NOTA_MT, na.rm = TRUE),2),
+            COUNT_NOTA_MT = n(),
+            MIN_NOTA_MT = round(min(NOTA_MT, na.rm = TRUE),2),
+            Q1_NOTA_MT = round(quantile(NOTA_MT, probs = 0.25, na.rm = TRUE),2),
+            MEDIAN_NOTA_MT = round(median(NOTA_MT, na.rm = TRUE),2),
+            MEAN_NOTA_MT = round(mean(NOTA_MT, na.rm = TRUE),2),
+            Q3_NOTA_MT = round(quantile(NOTA_MT, probs = 0.75, na.rm = TRUE),2),
+            MAX_NOTA_MT = round(max(NOTA_MT, na.rm = TRUE),2)) %>% 
+  datatable(colnames = c("Escolaridade da Mãe", "Coef. Variação","Quantidade","Mínimo","1º Quartil","Mediana","Mádia","3º Quartil","Máximo"),
+            rownames = FALSE,
+            options = list(paging=FALSE,
+                           ordering=FALSE,
+                           info=FALSE,
+                           searching=FALSE,
+                           columnDefs = list(list(className = 'dt-center',
+                                                  targets = "_all"))),
+            width = 850,
+            caption = "Tab.3: Medidas descritivas das notas em matemática segundo a escolaridade de mãe do aluno")
+
+
+```
+
+
+
+```{r ex-16, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+dados$ESC_MAE <- factor(dados$ESC_MAE, levels = c("Completou a 4.ª série/5.º ano, mas não completou a 8.ª série/9.º ano do Ensino Fundamental",
+                                                            "Completou a 8.ª série/9.º ano do Ensino Fundamental, mas não completou o Ensino Médio",
+                                                            "Completou a Faculdade",
+                                                            "Completou o Ensino Médio, mas não completou a Faculdade",
+                                                            "Não completou a 4.ª série/5.º ano do Ensino Fundamental",
+                                                            "Não sei",
+                                                            "Nunca estudou"), 
+                             labels = c("5.º ano",
+                                        "9.º ano",
+                                        "Faculdade",
+                                        "Ensino Médio",
+                                        "< 5.º ano",
+                                        "Não sei",
+                                        "Nunca estudou"))
+
+
+dados$ESC_MAE <- factor(dados$ESC_MAE, levels=c("Nunca estudou", "< 5.º ano", "5.º ano", "9.º ano", "Ensino Médio", "Faculdade", "Não sei"), ordered=TRUE)
+
+
+ggplot(data = na.omit(dados[,c("NOTA_MT","ESC_MAE")]), aes(y = NOTA_MT))+
+  geom_boxplot(color = 'black', fill = 'lightblue', alpha = 0.5, width = 10,
+               outlier.color = 'red', outlier.fill = 'red')+
+  facet_grid(~ESC_MAE)+
+  ylab("Nota em matemática") +
+  labs(title = "Distribuição das notas da Prova Brasil 2017 em matemática 
+       segundo a escolaridade de mãe do aluno", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0),
+        axis.text.x = element_blank())+
+  labs(caption = "Fig.3: Boxplots da distribuição das notas em matemática segundo a escolaridade da mãe
+       do aluno")+
+  theme(plot.caption = element_text(size = 11))
+
+
+
+```
+
+
+
+```{r ex-17, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+
+na.omit(dados[,c("NOTA_MT","TRABALHO")]) %>% 
+  select(NOTA_MT, TRABALHO) %>%
+  group_by(TRABALHO) %>%
+  summarise(CV_NOTA_MT = round(sd(NOTA_MT)/mean(NOTA_MT, na.rm = TRUE),2),
+            COUNT_NOTA_MT = n(),
+            MIN_NOTA_MT = round(min(NOTA_MT, na.rm = TRUE),2),
+            Q1_NOTA_MT = round(quantile(NOTA_MT, probs = 0.25, na.rm = TRUE),2),
+            MEDIAN_NOTA_MT = round(median(NOTA_MT, na.rm = TRUE),2),
+            MEAN_NOTA_MT = round(mean(NOTA_MT, na.rm = TRUE),2),
+            Q3_NOTA_MT = round(quantile(NOTA_MT, probs = 0.75, na.rm = TRUE),2),
+            MAX_NOTA_MT = round(max(NOTA_MT, na.rm = TRUE),2)) %>% 
+  datatable(colnames = c("Trabalho", "Coef. Variação","Quantidade","Mínimo","1º Quartil","Mediana","Média","3º Quartil","Máximo"),
+            rownames = FALSE,
+            options = list(paging=FALSE,
+                           ordering=FALSE,
+                           info=FALSE,
+                           searching=FALSE,
+                           columnDefs = list(list(className = 'dt-center',
+                                                  targets = "_all"))),
+            width = 850,
+            caption = "Tab.4: Comparação das medidas descritivas das notas em matemática entre alunos que trabalham fora de casa e alunos que não trabalham")
+
+
+```
+
+
+
+
+```{r ex-18, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+ggplot(data = na.omit(dados[,c("NOTA_MT","TRABALHO")]), aes(y = NOTA_MT))+
+  geom_boxplot(color = 'black', fill = 'lightblue', alpha = 0.5, width = 10,
+               outlier.color = 'red', outlier.fill = 'red')+
+  facet_grid(~TRABALHO)+
+  ylab("Nota em matemática") +
+  labs(title = "Comparação de notas da Prova Brasil 2017 em matemática entre alunos
+       que trabalham fora de casa e os que não trabalham", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0),
+        axis.text.x = element_blank())+
+  labs(caption = "Fig.4: Boxplot da distribuição das notas em matemática segundo o trabalho do aluno")+
+  theme(plot.caption = element_text(size = 11))
+
+
+
+```
+
+
+
+
+```{r ex-19, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+
+na.omit(dados[,c("NOTA_MT","PERSPECTIVAS")]) %>% 
+  select(NOTA_MT, PERSPECTIVAS) %>%
+  group_by(PERSPECTIVAS) %>%
+  summarise(CV_NOTA_MT = round(sd(NOTA_MT)/mean(NOTA_MT, na.rm = TRUE),2),
+            COUNT_NOTA_MT = n(),
+            MIN_NOTA_MT = round(min(NOTA_MT, na.rm = TRUE),2),
+            Q1_NOTA_MT = round(quantile(NOTA_MT, probs = 0.25, na.rm = TRUE),2),
+            MEDIAN_NOTA_MT = round(median(NOTA_MT, na.rm = TRUE),2),
+            MEAN_NOTA_MT = round(mean(NOTA_MT, na.rm = TRUE),2),
+            Q3_NOTA_MT = round(quantile(NOTA_MT, probs = 0.75, na.rm = TRUE),2),
+            MAX_NOTA_MT = round(max(NOTA_MT, na.rm = TRUE),2)) %>% 
+  datatable(colnames = c("Perspectivas", "Coef. Variação","Quantidade","Mínimo","1º Quartil","Mediana","Média","3º Quartil","Máximo"),
+            rownames = FALSE,
+            options = list(paging=FALSE,
+                           ordering=FALSE,
+                           info=FALSE,
+                           searching=FALSE,
+                           columnDefs = list(list(className = 'dt-center',
+                                                  targets = "_all"))),
+            width = 850,
+            caption = "Tab.5: Medidas descritivas das notas em matemática segundo perspectivas do aluno após concluir o ensino fundamental")
+
+
+```
+
+
+```{r ex-20, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='left'}
+
+dados$PERSPECTIVAS <- factor(dados$PERSPECTIVAS, levels = c("Ainda não sei", "Continuar estudando e trabalhar",
+                                                            "Somente continuar estudando","Somente trabalhar"), 
+                             labels = c("Ainda não sei", "Estudar e trabalhar",
+                                        "Somente Estudar","Somente trabalhar"))
+
+ggplot(data = na.omit(dados[,c("NOTA_MT","PERSPECTIVAS")]), aes(y = NOTA_MT))+
+  geom_boxplot(color = 'black', fill = 'lightblue', alpha = 0.5, width = 10,
+               outlier.color = 'red', outlier.fill = 'red')+
+  facet_grid(~PERSPECTIVAS)+
+  ylab("Nota em matemática") +
+  labs(title = "Distribuição das notas da Prova Brasil 2017 em matemática segundo
+       perspectivas do aluno após concluir o ensino fundamental", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0),
+        axis.text.x = element_blank())+
+  labs(caption = "Fig.X: Boxplot da distribuição das notas em matemática segundo perspectivas do aluno 
+  após concluir o ensino fundamental")+
+  theme(plot.caption = element_text(size = 11))
+
+
+```
+
+</div>
+</div>
+
+
+<div align="left">
+<div style="text-align: left;font-size: 11px;">
+
+```{r ex-22, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.cap="Fonte: SAEB 2017", fig.align='right'}
+
+datatable(round(data.frame(rbind(c(96,576,290,10,972),
+                                 c(118,478,271,27,894),
+                                 c(214,1054,561,37,1866),
+                                 c(((96/972)*100),(576/972)*100,(290/972)*100,(10/972)*100,(972/972)*100),
+                                 c((118/894)*100,(478/894)*100,(271/894)*100,(27/894)*100,(894/894)*100),
+                                 c((214/1866)*100,(1054/1866)*100,(561/1866)*100,(37/1866)*100,(1866/1866)*100))),2),
+          colnames = c("Ainda não sei", "Estudar e trabalhar", "Somente estudar", "Somente trabalhar", "Total"),
+          rownames = c("Feminino", "Masculino", "Total", "Fem. (%)", "Masc. (%)", "Total (%)"),
+          options = list(paging=FALSE,
+                         ordering=FALSE,
+                         info=FALSE,
+                         searching=FALSE,
+                         columnDefs = list(list(className = 'dt-center',
+                                                targets = "_all"))),
+          width = 800,
+          caption = "Tab.6: Distribuição de Freq. dos alunos conforme perspectivas, segundo o sexo e valores relativos por linha (Perifs Linha)")
+
+
+
+
+```
+
+
+
+</div>
+</div>
+
+```{r ex-23, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+```
+
+
+
+```{r ex-24, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+```
+
+
+
+```{r ex-25, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+```
+
+
+
+```{r ex-26, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+```
+
+
+```{r ex-27, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+```
+
+
+
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+```{r ex-28, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+```
+
+</div>
+</div>
+
+
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+```{r ex-29, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE}
+
+
+
+
+
+```
+
+</div>
+</div>
+
+
+
+# **4 Conclusões**
+
+
+
+# **5 Referências**
+
+BRASIL. Ministério da Ciência, Tecnologia e Inovação. Portaria nº 555, de 18 de junho de 2013. Estabelece a certificação CERTICS para software e dá outras providências. Disponível em: <http://www.mcti.gov.br>. Acesso em: 31/08/2016.
+
+[1] Ghitanya M. E., Al-Mutairi D. K., Balakrishnan N., Al-Enezia L. J. **Power Lindley DIstribution and associated inference**. Computational Statistics and Data Analysis, pg. 20-33. Elsevier, 2013. 
+
+[2] Bussab W. O., Morettin P. A. **Estatística Básica**. Editora Saraiva Educação, 9º Edição, 2017. 
+
+[3] Wikipedia. **Máxima verossimilhança**. Disponível em: < https://pt.wikipedia.org/wiki/M%C3%A1xima_verossimilhan%C3%A7a >. Acesso em: 25/11/2020. 
+
+
+

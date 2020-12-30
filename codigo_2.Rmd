@@ -1,0 +1,232 @@
+---
+title: "A influência de fatores sociais na proficiência em matemática dos alunos do 9º ano do ensino fundamental na Prova Brasil 2017"
+author: "André Fonseca Ferreira - 180097792, Eduardo de Sousa Carvalho - 180048082, Juliana Magalhães Rosa - 180020935"
+date: "11/12/2020"
+output:
+  word_document:
+    toc: yes
+    toc_depth: '3'
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    theme: yeti
+    highlight: tango
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+      number_sections: yes
+      css: css/style.css
+always_allow_html: true
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+
+---
+
+
+
+```{r setup, echo = FALSE, warning = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Diretorio de trabalho
+
+
+setwd("C:/Users/eddus/Documents/UnB/Metodos_Estatisticos_2/SAEB/Trabalho")
+
+#Imports
+
+library(dplyr)
+library(ggplot2)
+library(DT)
+library(e1071)
+
+
+# Analises:
+  
+# NOTA_MT > LOCALIZAÃÃO
+# NOTA_MT > SEXO
+# NOTA_MT > TRABALHO
+# NOTA_MT > ESCOLARIDADE DA MÃE
+# NOTA_MT > PERSPECTIVAS
+# PERSPECTIVAS > ESCOLARIDADE DA MÃE
+
+# Dados
+
+dados <- read.csv("amostra.csv", encoding = "UTF-8")
+
+dados$MUNICIPIO <- as.factor(dados$MUNICIPIO)
+
+gera_amostras <- function(dados,tamanho,quantidade){
+  indexes <- list(0)
+  for(i in 1:quantidade){
+    indexes[[i]] <- sample(1:dim(dados)[1], size = tamanho, 
+                           replace = FALSE, prob = NULL)
+  }
+  return(indexes)
+}
+
+amostra_500 <- gera_amostras(dados, 500, 1)
+
+
+options(scipen = 999)
+
+```
+
+# **1 Introdução**
+
+
+
+# **2 Metodologia**
+
+
+
+# **3 Resultados**
+
+
+
+
+**Teste T de Student**
+
+O teste t para comparação de médias, tem como pressupostos a normalidade das populações em questão e a independências das duas populações. 
+
+Conforme já estudado na atividade anterior, verificamos que as notas em língua portuguesa da Prova Brasil 2017 segue uma distribuição normal, o que atende o primeiro pressuposto. Além disso, não existe qualquer dependência entre as duas populações estudadas, o que atende o segundo pressuposto.
+
+Antes de realização do teste t, é preciso verificar se as variâncias das duas populações são iguais ou diferentes, e pra isso utilizamos o teste f, com as seguintes hipóteses:
+
+$H_0$: $\sigma_1^2 = \sigma_2^2$
+
+$H_1$: $\sigma_1^2\ne \sigma_2^2$
+
+Conforme resultado abaixo é possível concluir que, a um nível de significância $\alpha$=0,05 (95% de confiança) o teste indicou, para as duas amostras, não existirem indícios de que as variâncias não sejam iguais, com p-valores iguais a 0,9469 e 0,9936 para as amostras de 30 e 100 elementos, respectivamente:
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+
+```{r nt_1, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.align='right', fig.cap="Fonte: SAEB 2017"}
+
+
+
+```
+
+</div>
+</div>
+
+Com a informação sobre a igualdade de variâncias, efetuamos o teste t, que utiliza como hipóteses:
+
+$H_0$: $\mu_1 = \mu_2$
+
+$H_1$: $\mu_1\ne \mu_2$
+
+Conforme resultado abaixo, com p-valores iguais a 0,1982 e 0,6899 paras as amostras de 30 e 100 elementos, respectivamente, a conclusão é de que, considerando $\alpha$=0,05 (95% de confiança), não existem indícios de diferenças entre as médias das notas em língua portuguesa segundo a categoria administrativa da escola.
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+```{r nt_2, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.align='right', fig.cap="Fonte: SAEB 2017"}
+
+
+
+```
+
+</div>
+</div>
+
+
+
+
+**Anova**
+
+Conforme já mencionado anteriormente, o teste de comparação de médias ANOVA, tem como pressupostos a normalidade e a independência das populações em estudo. 
+
+Conforme já estudado na atividade anterior, verificamos que as notas em língua portuguesa da Prova Brasil 2017 podem ser descritas segundo uma distribuição normal, o que atende o primeiro pressuposto. Além disso, não existe qualquer dependência entre os 4 subgrupos, o que atende o segundo pressuposto.
+
+Para verificar o atendimento ao terceiro pressuposto (homocedasticidade), foi utilizado os testes de Bartlett e Levene, que possuem as seguintes hipóteses:
+
+$H_0$: $\sigma_1^2 = \sigma_2^2= \sigma_3^2= \sigma_4^2$
+
+$H_1$: Ao menos uma das variâncias $\sigma_i^2$ é diferente.
+
+Observe que os índices 1 a 5 para as variâncias $\sigma^2$ correspondem aos 4 subgrupos em análise, quais sejam as categorias de resposta para o tempo diário gasto em telas. Conforme resultado abaixo é possível concluir que, a um nível de significância $\alpha$=0,05 (95% de confiança) ambos os testes indicaram a inexistência de indícios de que as variâncias não sejam iguais:
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+
+```{r nt_3, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.align='right', fig.cap="Fonte: SAEB 2017"}
+
+
+
+
+```
+
+</div>
+</div>
+
+Nesse caso, p-valores ficaram distantes da zona de rejeição, o que permitiu concluir sobre a existência de homocedasticidade com confortável margem,
+
+Com todos os pressupostos atendidos, efetuamos o teste ANOVA para um fator, que utiliza como hipóteses:
+
+$H_0$: $\mu_1 = \mu_2= \mu_3= \mu_4$
+
+$H_1$: Ao menos uma das médias $\mu_i$ é diferente das demais.
+
+Conforme resultado abaixo, com p-valor iguais a 0,009371 o teste indicou que existem evidências para rejeitar a hipótese de igualdade das médias das notas em língua portuguesa segundo o tempo gasto com uso de tela:
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+```{r nt_4, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.align='right', fig.cap="Fonte: SAEB 2017"}
+
+
+
+
+```
+
+</div>
+</div>
+
+Como o teste indicou que a media das notas é diferente em ao menos um dos subgrupos, naturalmente foi realizado outro teste para comparações múltiplas das médias dos subgrupos utilizando o método de correção de Bonferroni, para fins de identificação de quais subgrupos divergem dos demais.
+
+Conforme resultados dispostos na tabela abaixo, considerando um $\alpha$=0,05 (95% de confiança), a única diferença significativa encontrada foi entre as categorias **Menos de 1 hora**, que abrange também os alunos que responderam não utilizar tais equipamentos e **Mais de 3 horas**. A indicação é que as notas dos alunos que responderam gastar mais de três horas diárias tem notas médias superiores aos dos alunos que declararam passar 1 hora ou menos:
+
+<div align="center">
+<div style="width: 80%; margin:0 left;text-align: left;font-size: 11px;">
+
+```{r nt_5, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, warnings=FALSE, fig.align='right', fig.cap="Fonte: SAEB 2017"}
+
+
+
+
+
+
+```
+
+</div>
+</div>
+
+
+
+
+
+# **4 Conclusões**
+
+
+
+# **5 Referências**
+
+BRASIL. Ministério da Ciência, Tecnologia e Inovação. Portaria nº 555, de 18 de junho de 2013. Estabelece a certificação CERTICS para software e dá outras providências. Disponível em: <http://www.mcti.gov.br>. Acesso em: 31/08/2016.
+
+[1] Ghitanya M. E., Al-Mutairi D. K., Balakrishnan N., Al-Enezia L. J. **Power Lindley DIstribution and associated inference**. Computational Statistics and Data Analysis, pg. 20-33. Elsevier, 2013. 
+
+[2] Bussab W. O., Morettin P. A. **Estatística Básica**. Editora Saraiva Educação, 9º Edição, 2017. 
+
+[3] Wikipedia. **Máxima verossimilhança**. Disponível em: < https://pt.wikipedia.org/wiki/M%C3%A1xima_verossimilhan%C3%A7a >. Acesso em: 25/11/2020. 
+
+
+

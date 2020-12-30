@@ -1,0 +1,48 @@
+---
+title: "Trabalho Final"
+author: "Juliana Magalhães Rosa"
+date: "12/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Carregando arquivo
+setwd("~/me2/trabalho_final")
+amostra <- read.csv("amostra.csv", encoding= "UTF-8")
+```
+
+```{r}
+#Importando bibliotecas
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+#Coletando amostra de tamanho 500
+set.seed(21)
+amostra_de_500 <- sample_n(amostra, 500, replace=FALSE)
+```
+
+```{r}
+#Gráfico
+ggplot(na.omit(amostra[,c("PERSPECTIVAS","SEXO")]), aes(x=PERSPECTIVAS, fill=SEXO))+
+  geom_bar(position="dodge", na.rm=TRUE, color = 'black')+
+  xlab("Perspectivas")+
+  ylab("Quantidade de Alunos")+
+  labs(title = "Perspectivas dos alunos conforme o sexo", subtitle = "SAEB 2017")+
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 0))+
+  labs(caption = "Fig.5: Gráfico de colunas das perspectivas dos alunos conforme o sexo")+
+  scale_fill_manual(values=c("lightpink", "lightblue"), name="Sexo")+
+  scale_x_discrete(labels=c("Ainda não sei"= "Ainda não sei", "Continuar estudando e trabalhar"="Estudar e trabalhar", "Somente continuar estudando"="Só estudar", "Somente trabalhar"="Só trabalhar"))
+```
+
+```{r}
+#Teste de Independência
+chisq.test(amostra_de_500$SEXO, amostra_de_500$PERSPECTIVAS)
+```
